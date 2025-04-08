@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "paths": {
+      "@/*": [
+        "./src/client/*"
+      ]
+    }
+  }
+}

@@ -1,0 +1,307 @@
+{
+  "name": ".",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon -w src/server -x tsx src/server/main.ts",
+    "start": "NODE_ENV=production tsx src/server/main.ts",
+    "build": "vite build",
+    "test": "vitest",
+    "load-test": "tsx load-test.ts"
+  },
+  "dependencies": {
+    "@radix-ui/react-avatar": "^1.1.3",
+    "@radix-ui/react-collapsible": "^1.1.3",
+    "@radix-ui/react-dialog": "^1.1.6",
+    "@radix-ui/react-dropdown-menu": "^2.1.6",
+    "@radix-ui/react-label": "^2.1.2",
+    "@radix-ui/react-popover": "^1.1.6",
+    "@radix-ui/react-scroll-area": "^1.2.3",
+    "@radix-ui/react-select": "^2.1.6",
+    "@radix-ui/react-separator": "^1.1.2",
+    "@radix-ui/react-slot": "^1.1.2",
+    "@radix-ui/react-switch": "^1.1.3",
+    "@radix-ui/react-tabs": "^1.1.3",
+    "@radix-ui/react-toggle": "^1.1.2",
+    "@radix-ui/react-toggle-group": "^1.1.2",
+    "@radix-ui/react-tooltip": "^1.1.8",
+    "@tailwindcss/vite": "^4.1.2",
+    "bcrypt": "^5.1.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.487.0",
+    "react": "^18.2.0",
+    "react-day-picker": "^9.6.4",
+    "react-dom": "^18.2.0",
+    "react-router": "^7.4.1",
+    "react-syntax-highlighter": "^15.6.1",
+    "recharts": "^2.15.2",
+    "require-in-the-middle": "^7.4.0",
+    "shimmer": "^1.2.1",
+    "tailwind-merge": "^3.1.0",
+    "tailwindcss": "^4.1.2",
+    "tsx": "^4.3.0",
+    "tw-animate-css": "^1.2.5",
+    "typescript": "^5.3.2",
+    "uuid": "^11.0.3",
+    "vite-express": "*",
+    "vite-tsconfig-paths": "^5.1.4"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-ses": "3.772.0",
+    "@faker-js/faker": "^9.4.0",
+    "@prisma/client": "6.5.0",
+    "@sendgrid/mail": "^8.1.4",
+    "@types/bunyan": "^1.8.11",
+    "@types/chai": "^5.0.1",
+    "@types/cls-hooked": "^4.3.9",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/ejs": "^3.1.5",
+    "@types/express": "^4.17.21",
+    "@types/heapdump": "^0.3.4",
+    "@types/json2csv": "^5.0.7",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/k6": "^0.57.1",
+    "@types/memjs": "^1.3.3",
+    "@types/mocha": "^10.0.10",
+    "@types/mysql": "^2.15.26",
+    "@types/needle": "^3.3.0",
+    "@types/node": "^20.17.30",
+    "@types/node-cron": "^3.0.11",
+    "@types/node-schedule": "^2.1.7",
+    "@types/nodemailer": "^6.4.17",
+    "@types/pg": "^8.11.10",
+    "@types/pug": "^2.0.10",
+    "@types/react": "^18.0.38",
+    "@types/react-dom": "^18.2.16",
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "@types/shimmer": "^1.2.0",
+    "@types/signale": "^1.4.7",
+    "@types/sinon": "^17.0.4",
+    "@types/supertest": "^6.0.2",
+    "@vitejs/plugin-react": "^4.2.0",
+    "ably": "2.6.4",
+    "agenda": "5.0.0",
+    "axios": "1.8.4",
+    "bree": "9.2.4",
+    "bull": "4.16.5",
+    "bunyan": "1.8.15",
+    "chai": "^4.3.10",
+    "commander": "13.1.0",
+    "cookie-parser": "^1.4.7",
+    "ejs": "3.1.10",
+    "eslint": "^9.15.0",
+    "express-handlebars": "^8.0.1",
+    "i": "^0.3.7",
+    "ioredis": "5.6.0",
+    "k6": "^0.0.0",
+    "keyv": "5.3.2",
+    "knex": "3.1.0",
+    "level": "9.0.0",
+    "log4js": "6.9.1",
+    "loglevel": "1.9.2",
+    "lru-cache": "11.0.2",
+    "mailgun.js": "12.0.1",
+    "memjs": "1.3.2",
+    "mocha": "^11.1.0",
+    "mongoose": "8.12.2",
+    "mysql2": "3.14.0",
+    "needle": "^3.3.1",
+    "node-cache": "5.1.2",
+    "node-cron": "3.0.3",
+    "node-schedule": "2.1.1",
+    "nodemailer": "6.10.0",
+    "nodemon": "^3.0.1",
+    "npm": "^11.2.0",
+    "pg": "8.14.1",
+    "phin": "^3.7.1",
+    "pino": "9.6.0",
+    "postmark": "4.0.5",
+    "pug": "3.0.3",
+    "pusher": "5.2.0",
+    "react-scan": "^0.3.3",
+    "redis": "4.7.0",
+    "reflect-metadata": "^0.2.2",
+    "sequelize": "6.37.6",
+    "signale": "1.4.0",
+    "sqlite3": "5.1.7",
+    "superagent": "10.2.0",
+    "supertest": "^7.1.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typeorm": "0.3.21",
+    "typescript": "^5.4.5",
+    "undici": "7.5.0",
+    "vite": "^5.0.2",
+    "vitest": "^3.1.1",
+    "winston": "3.17.0"
+  },
+  "peerDependencies": {
+    "@aws-sdk/client-ses": ">=3.0.0",
+    "@prisma/client": ">=6.0.0",
+    "ably": ">=2.0.0",
+    "agenda": ">=5.0.0",
+    "axios": ">=1.0.0",
+    "bree": ">=9.0.0",
+    "bull": ">=4.0.0",
+    "bunyan": ">=1.8.0",
+    "commander": ">=12.0.0",
+    "ejs": ">=3.0.0",
+    "ioredis": ">=5.0.0",
+    "keyv": ">=5.0.0",
+    "knex": ">=3.0.0",
+    "level": ">=9.0.0",
+    "log4js": ">=6.0.0",
+    "loglevel": ">=1.0.0",
+    "lru-cache": ">=11.0.0",
+    "mailgun.js": ">=10.0.0",
+    "memjs": ">=1.0.0",
+    "mongoose": ">=8.0.0",
+    "mysql2": ">=3.0.0",
+    "node-cache": ">=5.0.0",
+    "node-cron": ">=3.0.0",
+    "node-schedule": ">=2.0.0",
+    "nodemailer": ">=6.0.0",
+    "pg": ">=8.0.0",
+    "pino": ">=9.0.0",
+    "postmark": ">=4.0.0",
+    "pug": ">=3.0.0",
+    "pusher": ">=5.0.0",
+    "redis": ">=4.0.0",
+    "sequelize": ">=6.0.0",
+    "signale": ">=1.0.0",
+    "sqlite3": ">=5.0.0",
+    "superagent": ">=10.0.0",
+    "typeorm": ">=0.3.0",
+    "undici": ">=7.0.0",
+    "winston": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@aws-sdk/client-ses": {
+      "optional": true
+    },
+    "@prisma/client": {
+      "optional": true
+    },
+    "ably": {
+      "optional": true
+    },
+    "agenda": {
+      "optional": true
+    },
+    "axios": {
+      "optional": true
+    },
+    "bree": {
+      "optional": true
+    },
+    "bull": {
+      "optional": true
+    },
+    "bunyan": {
+      "optional": true
+    },
+    "commander": {
+      "optional": true
+    },
+    "ejs": {
+      "optional": true
+    },
+    "ioredis": {
+      "optional": true
+    },
+    "keyv": {
+      "optional": true
+    },
+    "knex": {
+      "optional": true
+    },
+    "level": {
+      "optional": true
+    },
+    "log4js": {
+      "optional": true
+    },
+    "loglevel": {
+      "optional": true
+    },
+    "lru-cache": {
+      "optional": true
+    },
+    "mailgun.js": {
+      "optional": true
+    },
+    "memjs": {
+      "optional": true
+    },
+    "mongodb": {
+      "optional": true
+    },
+    "mongoose": {
+      "optional": true
+    },
+    "mysql2": {
+      "optional": true
+    },
+    "node-cache": {
+      "optional": true
+    },
+    "node-cron": {
+      "optional": true
+    },
+    "node-schedule": {
+      "optional": true
+    },
+    "nodemailer": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    },
+    "pino": {
+      "optional": true
+    },
+    "postmark": {
+      "optional": true
+    },
+    "prisma": {
+      "optional": true
+    },
+    "pug": {
+      "optional": true
+    },
+    "pusher": {
+      "optional": true
+    },
+    "redis": {
+      "optional": true
+    },
+    "sequelize": {
+      "optional": true
+    },
+    "signale": {
+      "optional": true
+    },
+    "sqlite3": {
+      "optional": true
+    },
+    "superagent": {
+      "optional": true
+    },
+    "typeorm": {
+      "optional": true
+    },
+    "undici": {
+      "optional": true
+    },
+    "winston": {
+      "optional": true
+    }
+  }
+}
