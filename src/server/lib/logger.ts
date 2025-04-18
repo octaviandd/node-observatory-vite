@@ -59,11 +59,9 @@ export async function setupLogger(
   connection: Connection | PromiseConnection,
   redisClient: ReturnType<typeof createClient>
 ): Promise<Router> {
-  const promiseConn = 'promise' in connection ? 
-    connection.promise() : 
-    connection;
-  
-  await setupMigrations(driver, promiseConn);
+  // @ts-expect-error
+  connection = connection.hasOwnProperty('Promise') ? connection : connection.promise();
+  await setupMigrations(driver, connection as PromiseConnection);
   const {
     queryWatcherInstance,
     logWatcherInstance,
@@ -78,7 +76,7 @@ export async function setupLogger(
     redisWatcherInstance,
     viewWatcherInstance,
     modelWatcherInstance
-  } = instanceCreator(driver, promiseConn, redisClient);
+  } = instanceCreator(driver, connection, redisClient);
 
   watchers.requests = requestWatcherInstance;
   process.env.NODE_OBSERVATORY_ERRORS && (watchers.errors = exceptionWatcherInstance);

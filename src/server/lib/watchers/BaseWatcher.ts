@@ -43,18 +43,8 @@ export abstract class BaseWatcher implements Watcher {
     this.redisClient = redisClient ? redisClient : null;
     this.refreshInterval;
     this.refreshIntervalDuration = 10000;
-    this.storeConnection = this.initializeConnection(storeConnection)
-    console.log(storeConnection);
+    this.storeConnection = storeConnection;
     this.migrateToDatabase();
-  }
-
-  private async initializeConnection(connection: PromiseConnection): Promise<PromiseConnection> {
-    try {
-      return connection;
-    } catch (error: unknown) {
-      console.error('Failed to initialize connection:', error);
-      throw error;
-    }
   }
 
   /**
@@ -316,11 +306,6 @@ export abstract class BaseWatcher implements Watcher {
     }
   }
 
-  protected async getAllEntriesKnex(): Promise<any> {
-    const [results] = await this.storeConnection("observatory_entries").select("*").where("type", this.type);
-    return results;
-  }
-
   protected async getAllEntriesSQL(): Promise<any> {
     const [results] = await this.storeConnection.query("SELECT * FROM observatory_entries WHERE type = ?", [this.type]);
     return results;
@@ -344,30 +329,6 @@ export abstract class BaseWatcher implements Watcher {
       "INSERT INTO observatory_entries (uuid, request_id, job_id, schedule_id, type, content, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [entry.uuid, entry.requestId, entry.jobId, entry.scheduleId, entry.type, entry.content, new Date()]
     );
-  }
-
-  protected async handleAddKnex(entry: WatcherEntry): Promise<void> {
-    await this.storeConnection("observatory_entries").insert({
-      ...entry,
-      created_at: new Date()
-    });
-  }
-
-  protected async handleAddMongodb(entry: WatcherEntry): Promise<void> {
-    await this.storeConnection
-      .db('observatory')
-      .collection("observatory_entries")
-      .insertOne({ ...entry, created_at: new Date() });
-  }
-
-  protected async handleAddPrisma(entry: WatcherEntry): Promise<void> {
-    await this.storeConnection.observatory_entries.create({
-      data: entry
-    });
-  }
-
-  protected async handleAddTypeorm(entry: WatcherEntry): Promise<void> {
-    await this.storeConnection.save(entry);
   }
 
   /**
