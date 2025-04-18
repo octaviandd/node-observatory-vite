@@ -3,6 +3,8 @@ import { StoreDriver } from "../../../../types";
 import Watcher, { WatcherEntry, WatcherFilters } from "./Watcher";
 import { v4 as uuidv4 } from "uuid";
 import { requestLocalStorage, jobLocalStorage, scheduleLocalStorage } from './../patchers/store';
+import { Connection } from "mysql2";
+import { Connection as PromiseConnection } from "mysql2/promise";
 
 export abstract class BaseWatcher implements Watcher {
   protected readonly storeDriver: StoreDriver;
@@ -36,21 +38,19 @@ export abstract class BaseWatcher implements Watcher {
    * Constructor & Initialization
    * --------------------------------------------------------------------------
    */
-  constructor(storeDriver: StoreDriver, storeConnection: any, redisClient: any) {
+  constructor(storeDriver: StoreDriver, storeConnection: PromiseConnection, redisClient: any) {
     this.storeDriver = storeDriver;
     this.redisClient = redisClient ? redisClient : null;
     this.refreshInterval;
     this.refreshIntervalDuration = 10000;
-    this.storeConnection = storeConnection instanceof Promise
-      ? this.initializeConnection(storeConnection)
-      : storeConnection;
-
+    this.storeConnection = this.initializeConnection(storeConnection)
+    console.log(storeConnection);
     this.migrateToDatabase();
   }
 
-  private async initializeConnection(connection: Promise<any>): Promise<any> {
+  private async initializeConnection(connection: PromiseConnection): Promise<PromiseConnection> {
     try {
-      return await connection;
+      return connection;
     } catch (error: unknown) {
       console.error('Failed to initialize connection:', error);
       throw error;
@@ -215,8 +215,9 @@ export abstract class BaseWatcher implements Watcher {
             const parsedEntry : {[key: string]: any} = {
               type: keySegments[1],
               uuid: keySegments[2],
-            content: typeof value === "string" ? JSON.parse(value) : value,
-            created_at: this.storeDriver === "mongodb" || this.storeDriver === "prisma" || this.storeDriver === "typeorm" ? formattedDate : formattedDate};
+              content: typeof value === "string" ? JSON.parse(value) : value,
+              created_at: formattedDate
+            };
             
             const requestIdSegment = keySegments[3];
             const jobIdSegment = keySegments[4];
@@ -240,31 +241,7 @@ export abstract class BaseWatcher implements Watcher {
           console.log(`Attempting to insert ${parsedValues.length} entries into DB for ${this.type}`);
           try {
             switch (this.storeDriver) {
-              case "postgres":
-                const placeholders = parsedValues.map((_, index) =>
-                  `($${index * 7 + 1}, $${index * 7 + 2}, $${index * 7 + 3}, $${index * 7 + 4}, $${index * 7 + 5}, $${index * 7 + 6}, $${index * 7 + 7})`
-                ).join(', ');
-
-                const values = parsedValues.flatMap(row => [
-                  row.uuid,
-                  row.request_id ?? "",
-                  row.job_id ?? "",
-                  row.schedule_id ?? "",
-                  row.type,
-                  row.content,
-                  row.created_at
-                ]);
-
-                await this.storeConnection.query(
-                  `INSERT INTO observatory_entries (uuid, request_id, job_id, schedule_id, type, content, created_at)
-                  VALUES ${placeholders} ON CONFLICT (uuid) DO NOTHING`,
-                  values
-                );
-                break;
-              case "mysql":
               case "mysql2":
-              case "sqlite3":
-                // need to hide these transactions from the entries
                 try {
                   await this.storeConnection.query("START TRANSACTION");
                   await this.storeConnection.query(
@@ -285,57 +262,6 @@ export abstract class BaseWatcher implements Watcher {
                 } catch (error) {
                   console.error("Error inserting batch data:", error, this.type);
                 }
-                break;
-              case "mongodb":
-                await this.storeConnection
-                  .db()
-                  .collection("observatory_entries")
-                  .insertMany(parsedValues);
-                break;
-              case "knex":
-                await this.storeConnection("observatory_entries").insert(
-                  parsedValues
-                );
-                break;
-              case "prisma":
-                await this.storeConnection.ObservatoryEntry.createMany({
-                  data: parsedValues
-                });
-                break;
-              case "typeorm":
-                await this.storeConnection
-                  .createQueryBuilder()
-                  .insert()
-                  .into("observatory_entries")
-                  .values(parsedValues.map(entry => ({
-                    uuid: entry.uuid,
-                    request_id: entry.request_id,
-                    job_id: entry.job_id,
-                    schedule_id: entry.schedule_id,
-                    type: entry.type,
-                    content: JSON.stringify(entry.content),
-                    created_at: entry.created_at
-                  })))
-                  .execute();
-                break;
-              case "sequelize":
-                const entries  = parsedValues.map(entry => [
-                  entry.uuid,
-                  entry.request_id,
-                  entry.job_id,
-                  entry.schedule_id,
-                  entry.type,
-                  JSON.stringify(entry.content),
-                  entry.created_at
-                ]);
-
-                await this.storeConnection.query(
-                  "INSERT INTO observatory_entries (uuid, request_id, job_id, schedule_id, type, content, created_at) VALUES ?",
-                  {
-                    replacements: [entries],
-                    type: this.storeConnection.QueryTypes.INSERT
-                  }
-                );
                 break;
             }
             await this.redisClient.del(allKeys);
@@ -359,23 +285,8 @@ export abstract class BaseWatcher implements Watcher {
   async handleAdd(entry: WatcherEntry): Promise<void> {
     try {
       switch (this.storeDriver) {
-        case "knex":
-          await this.handleAddKnex(entry);
-          break;
-        case "mysql":
         case "mysql2":
-        case "postgres":
-        case "sqlite3":
           await this.handleAddSQL(entry);
-          break;
-        case "mongodb":
-          await this.handleAddMongodb(entry);
-          break;
-        case "prisma":
-          await this.handleAddPrisma(entry);
-          break;
-        case "typeorm":
-          await this.handleAddTypeorm(entry);
           break;
         default:
           throw new Error(`Unsupported store driver: ${this.storeDriver}`);
@@ -389,19 +300,8 @@ export abstract class BaseWatcher implements Watcher {
 
   async handleView(id: string): Promise<any> {
     switch (this.storeDriver) {
-      case "knex":
-        return this.handleViewKnex(id);
-      case "mysql":
       case "mysql2":
-      case "postgres":
-      case "sqlite3":
         return this.handleViewSQL(id);
-      case "mongodb":
-        return this.handleViewMongodb(id);
-      case "prisma":
-        return this.handleViewPrisma(id);
-      case "typeorm":
-        return this.handleViewTypeorm(id);
       default:
         throw new Error(`Unsupported store driver: ${this.storeDriver}`);
     }
@@ -409,12 +309,7 @@ export abstract class BaseWatcher implements Watcher {
 
   async getAllEntries(): Promise<any> {
     switch (this.storeDriver) {
-      case "knex":
-        return this.getAllEntriesKnex();
-      case "mysql":
       case "mysql2":
-      case "postgres":
-      case "sqlite3":
         return this.getAllEntriesSQL();
       default:
         throw new Error(`Unsupported store driver: ${this.storeDriver}`);
@@ -433,19 +328,8 @@ export abstract class BaseWatcher implements Watcher {
 
   protected handleRelatedData(modelId: string, requestId: string, jobId: string, scheduleId: string): Promise<any> {
     switch (this.storeDriver) {
-      case "mysql":
       case "mysql2":
-      case "postgres":
-      case "sqlite3":
         return this.handleRelatedDataSQL(modelId, requestId, jobId, scheduleId);
-      case "knex":
-        return this.handleRelatedDataKnex(modelId, requestId, jobId, scheduleId);
-      case "mongodb":
-        return this.handleRelatedDataMongodb(modelId, requestId, jobId, scheduleId);
-      case "prisma":
-        return this.handleRelatedDataPrisma(modelId, requestId, jobId, scheduleId);
-      case "typeorm":
-        return this.handleRelatedDataTypeorm(modelId, requestId, jobId, scheduleId);
       default:
         throw new Error(`Unsupported store driver: ${this.storeDriver}`);
     }
@@ -680,15 +564,7 @@ export abstract class BaseWatcher implements Watcher {
       return this.handleIndexTableByInstanceOrGroup(filters);
     } else {
        const handler: Record<StoreDriver, (filters: WatcherFilters) => Promise<any>> = {
-        knex: this.getIndexGraphDataKnex,
-        mysql: this.getIndexGraphDataSQL,
         mysql2: this.getIndexGraphDataSQL,
-        postgres: this.getIndexGraphDataSQL,
-        mongodb: this.getIndexGraphDataMongodb,
-        prisma: this.getIndexGraphDataPrisma,
-        sqlite3: this.getIndexGraphDataSQL,
-        typeorm: this.getIndexGraphDataTypeorm,
-        sequelize: this.getIndexGraphDataSequelize,
       };
       return handler[this.storeDriver].call(this, filters);
     }
@@ -697,25 +573,9 @@ export abstract class BaseWatcher implements Watcher {
 
   handleIndexTableByInstanceOrGroup(filters: WatcherFilters) {
     const handler: Record<StoreDriver, (filters: WatcherFilters) => Promise<any>> = filters.index === 'instance' ? {
-      knex: this.getIndexTableDataByInstanceKnex,
-      mysql: this.getIndexTableDataByInstanceSQL,
       mysql2: this.getIndexTableDataByInstanceSQL,
-      postgres: this.getIndexTableDataByInstanceSQL,
-      mongodb: this.getIndexTableDataByInstanceMongodb,
-      prisma: this.getIndexTableDataByInstancePrisma,
-      sqlite3: this.getIndexTableDataByInstanceSQL,
-      typeorm: this.getIndexTableDataByInstanceTypeorm,
-      sequelize: this.getIndexTableDataByInstanceSequelize,
     } : {
-      knex: this.getIndexTableDataByGroupKnex,
-      mysql: this.getIndexTableDataByGroupSQL,
       mysql2: this.getIndexTableDataByGroupSQL,
-      postgres: this.getIndexTableDataByGroupSQL,
-      mongodb: this.getIndexTableDataByGroupMongodb,
-      prisma: this.getIndexTableDataByGroupPrisma,
-      sqlite3: this.getIndexTableDataByGroupSQL,
-      typeorm: this.getIndexTableDataByGroupTypeorm,
-      sequelize: this.getIndexTableDataByGroupSequelize,
     };
 
     return handler[this.storeDriver].call(this, filters);
@@ -729,38 +589,12 @@ export abstract class BaseWatcher implements Watcher {
   protected abstract extractFiltersFromRequest(req: Request): WatcherFilters;
 
   protected abstract handleRelatedDataSQL(modelId: string, requestId: string, jobId: string, scheduleId: string): Promise<any>;
-  protected abstract handleRelatedDataKnex(modelId: string, requestId: string, jobId: string, scheduleId: string): Promise<any>;
-  protected abstract handleRelatedDataMongodb(modelId: string, requestId: string, jobId: string, scheduleId: string): Promise<any>;
-  protected abstract handleRelatedDataPrisma(modelId: string, requestId: string, jobId: string, scheduleId: string): Promise<any>;
-  protected abstract handleRelatedDataTypeorm(modelId: string, requestId: string, jobId: string, scheduleId: string): Promise<any>;
-  protected abstract handleRelatedDataSequelize(modelId: string, requestId: string, jobId: string, scheduleId: string): Promise<any>;
-
 
   protected abstract getIndexGraphDataSQL(filters: WatcherFilters): Promise<any>;
-  protected abstract getIndexGraphDataKnex(filters: WatcherFilters): Promise<any>;
-  protected abstract getIndexGraphDataMongodb(filters: WatcherFilters): Promise<any>;
-  protected abstract getIndexGraphDataPrisma(filters: WatcherFilters): Promise<any>;
-  protected abstract getIndexGraphDataTypeorm(filters: WatcherFilters): Promise<any>;
-  protected abstract getIndexGraphDataSequelize(filters: WatcherFilters): Promise<any>;
 
   protected abstract getIndexTableDataByGroupSQL(filters: WatcherFilters): Promise<any>;
-  protected abstract getIndexTableDataByGroupKnex(filters: WatcherFilters): Promise<any>;
-  protected abstract getIndexTableDataByGroupMongodb(filters: WatcherFilters): Promise<any>;
-  protected abstract getIndexTableDataByGroupPrisma(filters: WatcherFilters): Promise<any>;
-  protected abstract getIndexTableDataByGroupTypeorm(filters: WatcherFilters): Promise<any>;
-  protected abstract getIndexTableDataByGroupSequelize(filters: WatcherFilters): Promise<any>;
 
   protected abstract getIndexTableDataByInstanceSQL(filters: WatcherFilters): Promise<any>;
-  protected abstract getIndexTableDataByInstanceKnex(filters: WatcherFilters): Promise<any>;
-  protected abstract getIndexTableDataByInstanceMongodb(filters: WatcherFilters): Promise<any>;
-  protected abstract getIndexTableDataByInstancePrisma(filters: WatcherFilters): Promise<any>;
-  protected abstract getIndexTableDataByInstanceTypeorm(filters: WatcherFilters): Promise<any>;
-  protected abstract getIndexTableDataByInstanceSequelize(filters: WatcherFilters): Promise<any>;
 
   protected abstract handleViewSQL(id: string): Promise<any>;
-  protected abstract handleViewKnex(id: string): Promise<any>;
-  protected abstract handleViewMongodb(id: string): Promise<any>;
-  protected abstract handleViewPrisma(id: string): Promise<any>;
-  protected abstract handleViewTypeorm(id: string): Promise<any>;
-  protected abstract handleViewSequelize(id: string): Promise<any>;
 }

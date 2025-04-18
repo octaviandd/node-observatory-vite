@@ -2,7 +2,7 @@ import { setupLogger } from "./lib/logger";
 import express from "express";
 import ViteExpress from "vite-express";
 import cors from "cors";
-import mysql2 from "mysql2";
+import mysql2 from "mysql2/promise";
 import { createClient } from "redis";
 
 const app = express();

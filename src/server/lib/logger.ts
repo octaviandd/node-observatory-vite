@@ -59,7 +59,11 @@ export async function setupLogger(
   connection: Connection | PromiseConnection,
   redisClient: ReturnType<typeof createClient>
 ): Promise<Router> {
-  await setupMigrations(driver, connection);
+  const promiseConn = 'promise' in connection ? 
+    connection.promise() : 
+    connection;
+  
+  await setupMigrations(driver, promiseConn);
   const {
     queryWatcherInstance,
     logWatcherInstance,
@@ -74,7 +78,7 @@ export async function setupLogger(
     redisWatcherInstance,
     viewWatcherInstance,
     modelWatcherInstance
-  } = instanceCreator(driver, connection, redisClient);
+  } = instanceCreator(driver, promiseConn, redisClient);
 
   watchers.requests = requestWatcherInstance;
   process.env.NODE_OBSERVATORY_ERRORS && (watchers.errors = exceptionWatcherInstance);
@@ -98,7 +102,7 @@ export async function setupLogger(
  * @param driver - The database/storage driver to use.
  * @param connection - The connection details for the database/storage driver.
  */
-async function setupMigrations(driver: StoreDriver, connection: Connection | PromiseConnection): Promise<void | never> {
+async function setupMigrations(driver: StoreDriver, connection: PromiseConnection): Promise<void | never> {
   if (driver === "mysql2") {
     await mysql2Up(connection);
   } else {

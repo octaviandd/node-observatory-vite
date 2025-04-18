@@ -7,7 +7,7 @@ export async function up(connection: Connection | PromiseConnection): Promise<vo
 
   if (isPromiseConnection) {
     try {
-      const [rows]: any = await (connection as PromiseConnection).execute(`
+      const [rows]: any = await (connection as PromiseConnection).query(`
         SELECT COUNT(*) as count 
         FROM information_schema.tables 
         WHERE table_schema = DATABASE()
@@ -15,7 +15,7 @@ export async function up(connection: Connection | PromiseConnection): Promise<vo
       `);
 
       if (rows[0].count === 0) {
-        await (connection as PromiseConnection).execute(`
+        await (connection as PromiseConnection).query(`
           CREATE TABLE observatory_entries (
             id BIGINT AUTO_INCREMENT PRIMARY KEY,
             uuid CHAR(36) NOT NULL UNIQUE,
@@ -53,7 +53,7 @@ export async function up(connection: Connection | PromiseConnection): Promise<vo
         }
         else {
           if (results[0].count === 0) {
-            (connection as Connection).execute(`
+            (connection as Connection).query(`
               CREATE TABLE observatory_entries (
                 id BIGINT AUTO_INCREMENT PRIMARY KEY,
                 uuid CHAR(36) NOT NULL UNIQUE,
@@ -87,14 +87,14 @@ export async function down(connection: Connection | PromiseConnection): Promise<
   
   if (isPromiseConnection) {
     try {
-      await (connection as PromiseConnection).execute("DROP TABLE IF EXISTS observatory_entries;");
+      await (connection as PromiseConnection).query("DROP TABLE IF EXISTS observatory_entries;");
       console.log('observatory_entries table droped via mysql2/promise')
     } catch (e: unknown) {
       console.error(`Failed to drpop observatory_entires table via mysql2/promise: ${e}`)
     }
    } else {
      new Promise((resolve, reject) => {
-       (connection as Connection).execute("DROP TABLE IF EXISTS observatory_entries;", (err: unknown, results) => {
+       (connection as Connection).query("DROP TABLE IF EXISTS observatory_entries;", (err: unknown, results) => {
          if (err) return reject(err)
          else {
           console.error(`Failed to create observatory_entires table via mysql2: ${err}`)

@@ -159,15 +159,7 @@ export interface Config {
  * @typedef {string} StoreDriver
  */
 export type StoreDriver =
-  | "mysql"
-  | "mysql2"
-  | "mongodb"
-  | "postgres"
-  | "knex"
-  | "prisma"
-  | "sqlite3"
-  | "typeorm"
-  | "sequelize";
+  | "mysql2";
 
 /**
  * Interface representing standardized HTTP request data across different libraries
