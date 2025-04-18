@@ -4,19 +4,18 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 import { Outlet, useLocation } from "react-router"
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { StoreContext } from "@/store";
 import { Moon, RefreshCcw, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { DatePickerWithRange } from "@/components/ui/date-range-picker"
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-// Add this type for the time periods
+
 type TimePeriod = "1h" | "24h" | "7d" | "14d" | "30d";
 
 export default function MainLayout() {
   const location = useLocation();
-  const isPreviewRoute = /\/(mail|exception|log|notification|job|cache|query|model|request|schedule|redis|http|view)\/[^\/]+$/.test(location.pathname);
+  const isPreviewRoute = /\/(mail|exception|log|notification|job|cache|query|model|request|schedule|http|view)\/[^\/]+$/.test(location.pathname);
 
   const handleRefresh = () => {
     fetch(`/api/data/${location.pathname}/refresh`)
@@ -56,7 +55,7 @@ export default function MainLayout() {
 
 const PeriodSelector = () => {
   const { state, dispatch } = useContext(StoreContext);
-  const setPeriod = (period: "1h" | "24h" | "7d" | "14d" | "30d" | "custom") => {
+  const setPeriod = (period: "1h" | "24h" | "7d" | "14d" | "30d") => {
     window.localStorage.setItem("period", period);
     dispatch({ type: "setPeriod", payload: period });
   };  
@@ -89,9 +88,6 @@ const PeriodSelector = () => {
           </Button>
         ))}
       </div>
-      {/* <div className="ml-3 text-muted-foreground">
-        <DatePickerWithRange setPeriod={setPeriod} />
-      </div> */}
       <div className="flex items-center space-x-2">
       <Sun className="h-4 w-4" />
       <Switch

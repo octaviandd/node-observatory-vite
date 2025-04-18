@@ -42,7 +42,7 @@ export const formatDate = (date: string) => {
   };
 
 
-export const timePeriod = (period: "1h" | "24h" | "7d" | "14d" | "30d" | "custom") => {
+export const timePeriod = (period: "1h" | "24h" | "7d" | "14d" | "30d") => {
   return new Date(
     Date.now() -
     (period === "1h"

@@ -22,8 +22,6 @@ import RequestsIndex from "./screens/request/index/index";
 import RequestView from "./screens/request/view/view";
 import ScheduleIndex from "./screens/schedule/index";
 import SchedulePreview from "./screens/schedule/view/view";
-import RedisIndex from "./screens/redis/index";
-import RedisPreview from "./screens/redis/view/view";
 import HttpIndex from "./screens/http/index";
 import HttpPreview from "./screens/http/view/view";
 import LogIndex from "./screens/log/index";
@@ -36,8 +34,9 @@ import { StoreProvider } from "./store";
 import MainLayout from "./App";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+
 scan({
-  enabled: true,
+  enabled: !import.meta.env.PROD,
 })
 
 const router = createBrowserRouter([
@@ -174,18 +173,6 @@ const router = createBrowserRouter([
         path: "/schedule/:id",
         element: <SchedulePreview />,
       },
-      // {
-      //   path: "/redis",
-      //   element: <RedisIndex />,
-      // },
-      // {
-      //   path: "/redis/:key",
-      //   element: <RedisIndex />,
-      // },
-      // {
-      //   path: "/redis/:id",
-      //   element: <RedisPreview />,
-      // },
       {
         path: "/https",
         element: <HttpIndex />,

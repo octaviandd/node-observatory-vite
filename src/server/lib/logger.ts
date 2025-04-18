@@ -1,16 +1,19 @@
 /** @format */
 import "dotenv/config";
 import "./patchers/index";
-import {  mysql2Up,  mysqlUp, postgresUp, mongodbUp, prismaUp, sqliteUp, typeormUp, knexUp, sequelizeUp } from "./database/migrations/index";
+import {  mysql2Up } from "./database/migrations/index";
 import { LogWatcher, MailWatcher, JobWatcher, ScheduleWatcher, CacheWatcher, NotificationWatcher, RequestWatcher, HTTPClientWatcher, QueryWatcher, ExceptionWatcher, RedisWatcher, ViewWatcher, ModelWatcher } from "./watchers/index";
 import { StoreDriver } from "../../../types";
-import routes from "./routes/routes";
+import router from "./routes/routes";
 import { Router } from "express";
+import { createClient } from "redis";
+import { Connection } from "mysql2";
+import { Connection as PromiseConnection } from "mysql2/promise";
 
 export const instanceCreator = (
   driver: StoreDriver,
-  connection: any,
-  redisClient: any
+  connection: Connection | PromiseConnection,
+  redisClient: ReturnType<typeof createClient>
 ) => ({
   logWatcherInstance: new LogWatcher(driver, connection, redisClient),
   mailWatcherInstance: new MailWatcher(driver, connection, redisClient),
@@ -53,10 +56,10 @@ export const watchers: any = {
  */
 export async function setupLogger(
   driver: StoreDriver,
-  connection: any,
-  redisClient: any
+  connection: Connection | PromiseConnection,
+  redisClient: ReturnType<typeof createClient>
 ): Promise<Router> {
-  // await setupMigrations(driver, connection);
+  await setupMigrations(driver, connection);
   const {
     queryWatcherInstance,
     logWatcherInstance,
@@ -87,7 +90,7 @@ export async function setupLogger(
   process.env.NODE_OBSERVATORY_VIEWS && (watchers.view = viewWatcherInstance);
   process.env.NODE_OBSERVATORY_MODELS && (watchers.model = modelWatcherInstance);
 
-  return routes;
+  return router;
 }
 
 /**
@@ -95,25 +98,9 @@ export async function setupLogger(
  * @param driver - The database/storage driver to use.
  * @param connection - The connection details for the database/storage driver.
  */
-async function setupMigrations(driver: string, connection: any) {
-  if (driver === "mongodb") {
-    await mongodbUp(connection);
-  } else if (driver === "postgres") {
-    await postgresUp(connection);
-  } else if (driver === "mysql") {
-    await mysqlUp(connection);
-  } else if (driver === "mysql2") {
+async function setupMigrations(driver: StoreDriver, connection: Connection | PromiseConnection): Promise<void | never> {
+  if (driver === "mysql2") {
     await mysql2Up(connection);
-  } else if (driver === "prisma") {
-    await prismaUp();
-  } else if (driver === "sqlite3") {
-    await sqliteUp(connection);
-  } else if (driver === "typeorm") {
-    await typeormUp();
-  } else if (driver === "knex") {
-    await knexUp(connection);
-  } else if (driver === "sequelize") {
-    await sequelizeUp();
   } else {
     throw new Error("Unsupported database driver");
   }

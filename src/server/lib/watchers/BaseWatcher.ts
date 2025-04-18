@@ -51,7 +51,7 @@ export abstract class BaseWatcher implements Watcher {
   private async initializeConnection(connection: Promise<any>): Promise<any> {
     try {
       return await connection;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to initialize connection:', error);
       throw error;
     }

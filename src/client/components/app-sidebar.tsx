@@ -147,7 +147,7 @@ export const AppSidebar = memo(({ ...props }: React.ComponentProps<typeof Sideba
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <Link to="/" className="flex items-center gap-2 px-4 py-5 text-2xl font-semibold border-b">
-          <img src="./assets/neural-network.png" alt="" className="w-8" />
+          <img src="/images/neural-network.png" alt="" className="w-8" />
           <span>Observatory</span>
         </Link>
         <Link to="/" className="flex items-center text-lg gap-2 px-2 py-2">

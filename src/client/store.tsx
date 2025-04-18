@@ -9,15 +9,15 @@ import React, {
 
 // Define the shape of your state
 interface State {
-  period: "1h" | "24h" | "7d" | "14d" | "30d" | "custom";
+  period: "1h" | "24h" | "7d" | "14d" | "30d";
 }
 
 // Define the shape of your actions
-type Action = { type: "setPeriod"; payload: "1h" | "24h" | "7d" | "14d" | "30d" | "custom" };
+type Action = { type: "setPeriod"; payload: "1h" | "24h" | "7d" | "14d" | "30d" };
 
 // Create the initial state
 const initialState: State = {
-  period: window.localStorage.getItem("period") as "1h" | "24h" | "7d" | "14d" | "30d" | "custom",
+  period: window.localStorage.getItem("period") as "1h" | "24h" | "7d" | "14d" | "30d",
 };
 
 // Create a reducer function
